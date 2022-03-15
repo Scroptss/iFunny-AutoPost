@@ -1,0 +1,6 @@
+selenium
+termcolor
+datetime
+urllib3
+requests
+python-dotenv
