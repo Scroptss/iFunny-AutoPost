@@ -10,8 +10,8 @@ from datetime import datetime
 
 #Load the config file and get the email and password
 load_dotenv("config.env")
-email = os.getenv("EMAIL")
-password = os.getenv("PASSWORD")
+email = os.getenv("EMAIL") # Dont edit this, add your email in the config.env
+password = os.getenv("PASSWORD") # Dont edit this, add your email in the config.env
 
 host = "https://api.ifunny.mobi"
 
