@@ -167,8 +167,8 @@ def captchasolve(captcha_id = str):
                 driver.execute_script(js)
 
                 status = 1
-                gen = json.loads(res.text)
-                key = gen["request"]
+                
+                key = res["request"]
                 cprint(("Captcha Successful","green"))
                 driver.close()
                 return key
