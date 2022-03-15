@@ -14,7 +14,7 @@ email = os.getenv("EMAIL")
 password = os.getenv("PASSWORD")
 
 host = "https://api.ifunny.mobi"
-index = 0
+
 
 
 #Getting an existing basic auth token, or creating a basic auth token if one doesnt exist
@@ -46,6 +46,7 @@ def cprint(*args, end_each=" ", end_all=""):
 
 #Where the magic happens :)
 def login():
+    index = 0
     data = get_or_create_basic()
 
     url = host+"/v4/oauth2/token"
