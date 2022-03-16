@@ -4,6 +4,7 @@ import random
 import io
 import os
 import asyncio
+from PIL import Image
 from dotenv import load_dotenv
 from libs import fleep
 from urllib.request import urlopen
@@ -11,14 +12,11 @@ from termcolor import colored
 from datetime import datetime
 import time
 
-#Subreddit names to get your posts from. You can add or delete some but this is what i personally use
-subreddits = ["dankmemes","memes","schizopostingmemes","cursed_images","shitposting","deepfriedmemes",
-"surrealmemes", "nukedmemes", "bigbangedmemes", "wackytictacs", "bonehurtingjuice"] 
 
-#edit this to determine how many seconds will pass before another post gets posted. I'd recommend a slow-ish speed as not to get shadow banned if they ever detect this.
+
 load_dotenv("config.env")
 seconds_between_posts = int(os.getenv("TIME"))
-print(seconds_between_posts)
+
 
 #Thanks iFunny user Affect for this dope function that prints in pretty colors
 def cprint(*args, end_each=" ", end_all=""):
@@ -28,42 +26,109 @@ def cprint(*args, end_each=" ", end_all=""):
 		print(colored(str(i[0]), i[1].lower()), end=end_each)
 	print(end_all)
 
+
 try:
     with open("bearer.json","r") as f:
         data = json.load(f)
-
         bearer = data.get("bearer")
+
 except:
     cprint(("You need to run the Login file first! Read the README!","red"))
     bearer = None
 
-posted = []
+async def crop_watermark(url):
 
-#Main loop getting a post from reddit and uploading to profile
+    img = Image.open(requests.get(url, stream=True).raw)
+    w, h = img.size
+    img.crop((0,0,w,h-22))
+    imgByteArr = io.BytesIO()
+    img.save(imgByteArr, format=img.format)
+
+    return imgByteArr
+
+
+async def get_collective():
+
+    headers = {
+    'Host': 'api.ifunny.mobi',
+    'Accept': 'video/mp4, image/jpeg',
+    'Applicationstate': '1',
+    'Content-Type': 'application/x-www-form-urlencoded',
+    'Authorization': 'Bearer '+bearer,
+    'Content-Length': '8',
+    'Ifunny-Project-Id': 'iFunny',
+    'User-Agent': 'iFunny/7.14.2(22213) iphone/14.0.1 (Apple; iPhone8,4)',
+    'Accept-Language': 'en-US;q=1',
+    'Accept-Encoding': 'gzip, deflate',}
+
+    data = 'limit=100'
+
+    r = requests.post('https://api.ifunny.mobi/v4/feeds/collective', headers=headers, data=data).json()
+
+    memes = []
+
+    for i in r['data']['content']['items']:
+        data = {'type':i['type'],'url':i['url'],'tags':i['tags'],'approval':i['shot_status']}
+        memes.append(data)
+        
+    with open("memes.json","w") as f:
+        json.dump(memes,f,indent=1)
+    
+    cprint(("Updated meme cache","green"))
+
+    return memes
+
+
+
+#Main loop of getting a random post and uploading to profile
 async def autopost():
 
     if not bearer:
         return
     
+    #Loads posts from existing memes.json file, or requests posts from ifunny and caches ~100 of them for later
+    try:
+        with open("memes.json","r") as f:
+            data = json.load(f)
+        
+    except:
+        data = await get_collective()
+        
+    
+
     while True:
-        tag = random.choice(subreddits)
+
+        if data == []:
+            data = await get_collective()
+        
         color = random.choice(["cyan","magenta","green","blue","yellow"])
-        r = requests.get("https://meme-api.herokuapp.com/gimme/"+tag).json()
-        url = r.get("url")
-        if not url:
-            continue
-        nsfw = r["nsfw"]
-        if nsfw:
-            continue
-        #print(url)
-        if url in posted:
-            continue
-        try:
-            r = urlopen(url).read()
-        except:
+        
+        meme = random.choice(data)
+        url = meme["url"]
+        m_type = meme["type"]
+        tags = meme["tags"]
+
+        #shameless plug so i can see all users who support my sick python skills B)
+        tags.append("scriptsautoposter")
+
+
+        if meme["approval"] != "approved":
+            data.remove(meme)
             continue
 
-        image_bytes = io.BytesIO(r)
+        try:
+            if m_type == "pic":
+                image_bytes = await crop_watermark(url)
+                
+                
+            else:
+                r = urlopen(url).read()
+                image_bytes = io.BytesIO(r)
+        except:
+            data.remove(meme)
+            continue
+
+        
         mime = fleep.get(image_bytes.getvalue()).mime
         
         if mime:
@@ -97,9 +162,13 @@ async def autopost():
             "Accept-Language": "en-US;q=1, zh-Hans-US;q=0.9"
             }
 
-        requests.post(url='https://api.ifunny.mobi/v4/content', data={'type':upload_type, 'tags':[], 'description':'', 'visibility':'public'}, headers=headers, files={uppload: ("image.tmp", image_bytes.getvalue(), mime[0])})
-        posted.append(url)
-        cprint(("Posted a new meme! Refresh your profile.",color))
+        requests.post(url='https://api.ifunny.mobi/v4/content', data={'type':upload_type, 'tags':json.dumps(tags), 'description':'Posted using an autoposter made by Scripts', 'visibility':'public'}, headers=headers, files={uppload: ("image.tmp", image_bytes.getvalue(), mime[0])})
+        cprint(("Posted a new",color),(f"{uppload.capitalize()}!","white"),("Refresh your profile.",color))
+        
+        data.remove(meme)
+        with open("memes.json","w") as f:
+            json.dump(data,f,indent=1)
+        
         await asyncio.sleep(seconds_between_posts) 
         continue
 
