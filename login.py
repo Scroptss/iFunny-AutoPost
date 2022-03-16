@@ -10,11 +10,9 @@ from datetime import datetime
 
 #Load the config file and get the email and password
 load_dotenv("config.env")
-email = os.getenv("EMAIL") # Dont edit this, add your email in the config.env
-password = os.getenv("PASSWORD") # Dont edit this, add your email in the config.env
-
+email = os.getenv("EMAIL") # Dont edit this, add your email in the config.env file
+password = os.getenv("PASSWORD") # Dont edit this, add your password in the config.env file
 host = "https://api.ifunny.mobi"
-
 
 
 #Getting an existing basic auth token, or creating a basic auth token if one doesnt exist
@@ -71,7 +69,7 @@ def login():
                 payload = f'g-recaptcha-response={key}'
                 paramz1 = {'Host': 'api.ifunny.mobi','Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Content-Type': 'application/x-www-form-urlencoded','Origin': 'https://api.ifunny.mobi','Content-Length': f'{len(payload)}','Accept-Language': 'en-us','User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148','Referer': f'{r["data"]["captcha_url"]}','Accept-Encoding': 'gzip, deflate'}
                 
-                re = requests.post(url=r["data"]["captcha_url"],headers=paramz1,data=payload,allow_redirects=False)
+                requests.post(url=r["data"]["captcha_url"],headers=paramz1,data=payload,allow_redirects=False)
                 
                 cprint(("Logging in...","green"))
 
@@ -99,7 +97,7 @@ def login():
 
                 #Primes the bearer token that was freshly generated so it can be used 
                 header = {'Host': 'api.ifunny.mobi','Accept': 'video/mp4, image/jpeg','Applicationstate': '1','Accept-Encoding': 'gzip, deflate','Ifunny-Project-Id': 'iFunny','User-Agent': 'iFunny/7.14.2(22213) iphone/14.0.1 (Apple; iPhone8,4)','Accept-Language': 'en-US;q=1','Authorization': 'Basic '+data,}
-                counter = requests.get(host+"/v4/counters",headers=header)
+                requests.get(host+"/v4/counters",headers=header)
                 
                 cprint(("Priming your basic auth token... please wait","green"))
                 time.sleep(10)
@@ -127,6 +125,7 @@ def login():
         s = json.load(bearer_file)
         s["bearer"] = login["access_token"]
         s["user_id"] = req["data"]["id"]
+        s["username"] = req["data"]["original_nick"]
         with open("bearer.json","w") as fi:
             json.dump(s,fi,indent=1)
         cprint(("Logged in successfully as","green"),(f"{data['data']['original_nick']}!","cyan"),("\nNow run the run.py and you should see posts appearing automatically","green"))
