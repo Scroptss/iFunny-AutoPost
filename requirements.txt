@@ -4,3 +4,4 @@ datetime
 urllib3
 requests
 python-dotenv
+pillow
