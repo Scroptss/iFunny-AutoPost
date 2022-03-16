@@ -40,7 +40,7 @@ async def crop_watermark(url):
 
     img = Image.open(requests.get(url, stream=True).raw)
     w, h = img.size
-    img.crop((0,0,w,h-22))
+    img.crop((0,0,w,h-24)) #removes ifunny.co logo from image
     imgByteArr = io.BytesIO()
     img.save(imgByteArr, format=img.format)
 
