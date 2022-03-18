@@ -2,7 +2,7 @@
 A meme stealer and auto uploader for the meme app iFunny
 
 
-Requirements: Google Chrome, Chromedriver.exe, Python 3.7+ (I use 3.10)
+Requirements: Python 3.7+ (I use 3.10)
 Optional (But recommended): Any python IDE (Visual Studio Code, Pycharm, VIM)
 
 
@@ -11,7 +11,6 @@ How to install Python:
 	Install from the link below and make sure to click "Add to PATH" when installing.
 
 	https://www.python.org/downloads/
-
 
 
 Instructions:
