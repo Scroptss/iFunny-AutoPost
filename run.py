@@ -59,7 +59,7 @@ async def get_collective():
 
     data = 'limit=100'
 
-    r = requests.post('https://api.ifunny.mobi/v4/feeds/collective', headers=headers, data=data)
+    r = requests.post('https://api.ifunny.mobi/v4/feeds/collective', headers=headers, data=data).json()
 
     memes = []
 
@@ -69,7 +69,7 @@ async def get_collective():
         
     with open("./libs/memes.json","w") as f:
         json.dump(memes,f,indent=1)
-    return data
+    return memes
 
 
 
