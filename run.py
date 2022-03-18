@@ -13,7 +13,6 @@ from datetime import datetime
 import time
 
 
-
 load_dotenv("config.env")
 seconds_between_posts = int(os.getenv("TIME"))
 
@@ -28,10 +27,10 @@ def cprint(*args, end_each=" ", end_all=""):
 
 
 try:
-    with open("bearer.json","r") as f:
+    with open("./libs/bearer.json","r") as f:
         data = json.load(f)
-        bearer = data.get("bearer")
 
+        bearer = data.get("bearer")
 except:
     cprint(("You need to run the Login file first! Read the README!","red"))
     bearer = None
@@ -40,11 +39,8 @@ async def crop_watermark(url):
 
     img = Image.open(requests.get(url, stream=True).raw)
     w, h = img.size
-    img.crop((0,0,w,h-24)) #removes ifunny.co logo from image
-    imgByteArr = io.BytesIO()
-    img.save(imgByteArr, format=img.format)
 
-    return imgByteArr
+    return img.crop((0,0,w,h-24)).tobytes()
 
 
 async def get_collective():
@@ -63,7 +59,7 @@ async def get_collective():
 
     data = 'limit=100'
 
-    r = requests.post('https://api.ifunny.mobi/v4/feeds/collective', headers=headers, data=data).json()
+    r = requests.post('https://api.ifunny.mobi/v4/feeds/collective', headers=headers, data=data)
 
     memes = []
 
@@ -71,24 +67,21 @@ async def get_collective():
         data = {'type':i['type'],'url':i['url'],'tags':i['tags'],'approval':i['shot_status']}
         memes.append(data)
         
-    with open("memes.json","w") as f:
+    with open("./libs/memes.json","w") as f:
         json.dump(memes,f,indent=1)
-    
-    cprint(("Updated meme cache","green"))
-
-    return memes
+    return data
 
 
 
-#Main loop of getting a random post and uploading to profile
+#Main loop getting a random post and uploading to profile
 async def autopost():
 
     if not bearer:
         return
     
-    #Loads posts from existing memes.json file, or requests posts from ifunny and caches ~100 of them for later
+    #Loads posts from existing memess.json file, or requests posts from ifunny and caches ~100 of them for later
     try:
-        with open("memes.json","r") as f:
+        with open("./libs/memes.json","r") as f:
             data = json.load(f)
         
     except:
@@ -108,9 +101,6 @@ async def autopost():
         m_type = meme["type"]
         tags = meme["tags"]
 
-        #shameless plug so i can see all users who support my sick python skills B)
-        tags.append("scriptsautoposter")
-
 
         if meme["approval"] != "approved":
             data.remove(meme)
@@ -119,7 +109,6 @@ async def autopost():
         try:
             if m_type == "pic":
                 image_bytes = await crop_watermark(url)
-                
                 
             else:
                 r = urlopen(url).read()
@@ -162,11 +151,12 @@ async def autopost():
             "Accept-Language": "en-US;q=1, zh-Hans-US;q=0.9"
             }
 
-        requests.post(url='https://api.ifunny.mobi/v4/content', data={'type':upload_type, 'tags':json.dumps(tags), 'description':'Posted using an autoposter made by Scripts', 'visibility':'public'}, headers=headers, files={uppload: ("image.tmp", image_bytes.getvalue(), mime[0])})
-        cprint(("Posted a new",color),(f"{uppload.capitalize()}!","white"),("Refresh your profile.",color))
+        requests.post(url='https://api.ifunny.mobi/v4/content', data={'type':upload_type, 'tags':tags, 'description':'Posted using an autoposter made by Scripts', 'visibility':'public'}, headers=headers, files={uppload: ("image.tmp", image_bytes.getvalue(), mime[0])})
+
+        cprint(("Posted a new meme! Refresh your profile.",color))
         
         data.remove(meme)
-        with open("memes.json","w") as f:
+        with open("./libs/memes.json","w") as f:
             json.dump(data,f,indent=1)
         
         await asyncio.sleep(seconds_between_posts) 
