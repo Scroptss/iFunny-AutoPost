@@ -39,8 +39,10 @@ async def crop_watermark(url):
 
     img = Image.open(requests.get(url, stream=True).raw)
     w, h = img.size
+    imgByteArr = io.BytesIO()
+    img.save(imgByteArr, format=img.format)
 
-    return img.crop((0,0,w,h-24)).tobytes()
+    return imgByteArr
 
 
 async def get_collective():
