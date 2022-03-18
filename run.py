@@ -155,7 +155,7 @@ async def autopost():
 
         requests.post(url='https://api.ifunny.mobi/v4/content', data={'type':upload_type, 'tags':tags, 'description':'Posted using an autoposter made by Scripts', 'visibility':'public'}, headers=headers, files={uppload: ("image.tmp", image_bytes.getvalue(), mime[0])})
 
-        cprint(("Posted a new meme! Refresh your profile.",color))
+        cprint(("Posted a new",color),(f"{uppload.capitalize()}!","white"),("Refresh your profile.",color))
         
         data.remove(meme)
         with open("./libs/memes.json","w") as f:
