@@ -39,6 +39,7 @@ async def crop_watermark(url):
 
     img = Image.open(requests.get(url, stream=True).raw)
     w, h = img.size
+    img.crop((0,0,w,h-24))
     imgByteArr = io.BytesIO()
     img.save(imgByteArr, format=img.format)
 
@@ -153,8 +154,7 @@ async def autopost():
             "Accept-Language": "en-US;q=1, zh-Hans-US;q=0.9"
             }
 
-        requests.post(url='https://api.ifunny.mobi/v4/content', data={'type':upload_type, 'tags':tags, 'description':'Posted using an autoposter made by Scripts', 'visibility':'public'}, headers=headers, files={uppload: ("image.tmp", image_bytes.getvalue(), mime[0])})
-
+        requests.post(url='https://api.ifunny.mobi/v4/content', data={'type':upload_type, 'tags':json.dumps(tags), 'description':'Posted using an autoposter made by Scripts', 'visibility':'public'}, headers=headers, files={uppload: ("image.tmp", image_bytes.getvalue(), mime[0])})
         cprint(("Posted a new",color),(f"{uppload.capitalize()}!","white"),("Refresh your profile.",color))
         
         data.remove(meme)
