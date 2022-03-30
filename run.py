@@ -11,7 +11,6 @@ from PIL import Image
 from libs import fleep
 from urllib.request import urlopen
 from datetime import datetime
-import sys
 
 
 host = "https://api.ifunny.mobi"
