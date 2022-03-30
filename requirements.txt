@@ -1,4 +1,3 @@
-termcolor
 datetime
 urllib3
 requests
