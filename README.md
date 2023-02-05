@@ -26,6 +26,4 @@ Instructions:
 
 
 
-					(っ・ω・)っ [̲̅$̲̅(̲̅5̲̅)̲̅$̲̅]
-					"I can haz dollar?" ~ cash.app/$iFunnyScripts
-							      https://iFunny.co/user/Scripts
+					-Fuck them dollaz
